@@ -1,0 +1,20 @@
+{
+  "name": "@tgsnake/step",
+  "version": "2.2.0",
+  "description": "Step plugin for tgsnake",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "tgsnake"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "tgsnake": "^2.0.0-beta.4"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
