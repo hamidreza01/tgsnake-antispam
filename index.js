@@ -1,40 +1,65 @@
-class Bot {
-  constructor() {
+class AntiSpam {
+  /**
+   * @param floodConfig flood settings.
+   */
+  constructor(floodConfig) {
     this._ = new Object();
-    this._.db = [];
+    this._.sys = new Array();
+    this._.conf = floodConfig;
+    setInterval(() => {
+      for (let i = 0; this._.sys.length > i; i++) {
+        this._.sys[i].len = 0;
+        this._.sys[i].block = false;
+      }
+    }, floodConfig.timer);
   }
-  run(ctx) {
-    this._.ctx = ctx;
-    return this;
-  }
-  start(step, func) {
-    let thisuser = this._.db.findIndex(()=>this._.ctx.from.id );
-    if (this._.ctx.text != "/start") {
-      return;
-    }
-    if (thisuser == -1) {
-      this._.db.push({
-        userId: this._.ctx.from.id,
-        step: step,
+  start(ctx) {
+    this._.loc = this._.sys.findIndex(() => ctx.from.id);
+    if (this._.loc == -1) {
+      this._.sys.push({
+        userId: ctx.from.id,
+        len: 1,
+        spmMsg: false,
+        block: false,
+        blockForEver: false,
       });
     } else {
-     this._.db[thisuser].step = step;
+      this._.sys[this._.loc].len += 1;
+      if (!this._.sys[this._.loc].blockForEver) {
+        if (!this._.sys[this._.loc].block) {
+          if (this._.sys[this._.loc].len < this._.conf.len1) {
+          } else if (this._.sys[this._.loc].len < this._.conf.len2) {
+            if (this._.conf.showText) {
+              ctx.reply(this._.conf.text1);
+              this._.sys[this._.loc].spmMsg = true;
+            }
+          } else if (this._.sys[this._.loc].len < this._.conf.len3) {
+            if (this._.conf.showText) {
+              ctx.reply(this._.conf.text2);
+            }
+            this._.sys[this._.loc].block = true;
+          }
+        }
+        if (this._.sys[this._.loc].len >= this._.conf.len3) {
+          if (this._.conf.showText) {
+            ctx.reply(this._.conf.text3);
+          }
+          this._.sys[this._.loc].blockForEver = true;
+        }
+      }
     }
-    func();
   }
-  step(step, func) {
-    let thisuser = this._.db.findIndex(()=> this._.ctx.from.id );
-    if (step == this._.db[thisuser]?.step) {
-      if(this._.ctx.text != '/start'){
-        func();
-      } 
+  run() {
+    if (
+      this._.sys[this._.loc]?.blockForEver ||
+      this._.sys[this._.loc]?.block ||
+      this._.sys[this._.loc]?.spmMsg
+    ) {
+      this._.sys[this._.loc].spmMsg = false;
+      return false;
+    } else {
+      return true;
     }
-  }
-  setStep(step) {
-    let thisuser = this._.db.findIndex(()=> this._.ctx.from.id );
-    this._.db[thisuser].step = step;
   }
 }
-module.exports = {
-  robot: new Bot(),
-};
+module.exports = AntiSpam;
